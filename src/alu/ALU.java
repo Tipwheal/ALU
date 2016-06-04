@@ -133,6 +133,7 @@ public class ALU {
 	}
 
 	public String leftShift(String operand, int n) {
+		//leftshift
 		return null;
 	}
 
