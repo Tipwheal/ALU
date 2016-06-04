@@ -7,19 +7,11 @@ public class ALUTest {
 
 	public static void main(String[] args) {
 		ALUTest test = new ALUTest();
-		// test.test();
-		// test.testIntegerRepresentation();
-		// test.testFloatRepresentation();
-		// test.testLeftShift();
-		// test.testFullAdder();
+		test.testIntegerRepresentation();
+		test.testFloatRepresentation();
+		test.testLeftShift();
+		test.testFullAdder();
 		test.testClaAdder();
-	}
-
-	public void test() {
-		int i = 1 << 31;
-		System.out.println(i + "");
-		// System.out.println(Math.pow(2, 32));
-		// System.out.println(alu.integerRepresentation("-2147483648", 32));
 	}
 
 	public void testIntegerRepresentation() {
