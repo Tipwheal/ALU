@@ -5,18 +5,19 @@ public class ALUTest {
 
 	public static void main(String[] args) {
 		ALUTest test = new ALUTest();
-		test.test();
-		 test.testIntegerRepresentation();
+		// test.test();
+		// test.testIntegerRepresentation();
 		// test.testFloatRepresentation();
+		test.testLeftShift();
 	}
 
 	public void test() {
-		int i = 1<<31;
-		System.out.println(i+"");
-//		System.out.println(Math.pow(2, 32));
-//		System.out.println(alu.integerRepresentation("-2147483648", 32));
+		int i = 1 << 31;
+		System.out.println(i + "");
+		// System.out.println(Math.pow(2, 32));
+		// System.out.println(alu.integerRepresentation("-2147483648", 32));
 	}
-	
+
 	public void testIntegerRepresentation() {
 		for (int length = 1; length < 32; length++) {
 			System.out.println("length:\t" + length);
@@ -25,7 +26,6 @@ public class ALUTest {
 				String res = alu.integerRepresentation(i + "", length);
 				System.out.print(i + "\t" + res);
 				System.out.println("\t" + alu.integerTrueValue(res));
-				break;
 			}
 		}
 	}
@@ -37,5 +37,9 @@ public class ALUTest {
 				System.out.println(i + "." + j + "\t" + alu.floatRepresentation(i + "." + j, 4, 10));
 			}
 		}
+	}
+
+	public void testLeftShift() {
+		System.out.println(alu.leftShift("11111", 6));
 	}
 }
