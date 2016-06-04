@@ -468,11 +468,11 @@ public class ALU {
 	}
 
 	/**
-	 * Not gate.
+	 * 非门。
 	 * 
 	 * @param input
-	 *            All inputs.
-	 * @return "0" or "1".
+	 *            所有输入
+	 * @return 有1则0，否则1
 	 */
 	public String not(String... input) {
 		for (String s : input)
@@ -483,11 +483,11 @@ public class ALU {
 	}
 
 	/**
-	 * Or gate.
+	 * 或门。
 	 * 
 	 * @param input
-	 *            All inputs.
-	 * @return "0" or "1".
+	 *            所有输入
+	 * @return 有1则1，否则0
 	 */
 	public String or(String... input) {
 		for (String s : input)
@@ -497,17 +497,16 @@ public class ALU {
 	}
 
 	/**
-	 * And gate.
+	 * 与门。
 	 * 
-	 * @param input
-	 *            All inputs.
-	 * @return "0" or "1".
+	 * @param a
+	 *            一个输入
+	 * @param b
+	 *            另一个输入
+	 * @return 都为一则1，否则0
 	 */
-	public String and(String... input) {
-		for (String s : input)
-			if (s.equals("0"))
-				return "0";
-		return "1";
+	public String and(String a, String b) {
+		return a.equals(b) && a.equals("1") ? "1" : "0";
 	}
 
 	/**
