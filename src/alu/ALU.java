@@ -184,7 +184,7 @@ public class ALU {
 	public String negation(String operand) {
 		String result = "";
 		for (int i = 0; i < operand.length(); i++)
-			result += this.Not(operand.substring(i, i + 1));
+			result += this.not(operand.substring(i, i + 1));
 		return result;
 	}
 
@@ -248,7 +248,8 @@ public class ALU {
 	 * @return 相加的结果，用长度为 2 的字符串表示，第 1 位表示进位，第 2 位表示和
 	 */
 	public String fullAdder(char x, char y, char c) {
-		return null;
+		return this.or(this.and(x + "", y + ""), this.and(y + "", c + ""), this.and(c + "", x + ""))
+				+ this.xor(this.xor(x + "", y + ""), c + "");
 	}
 
 	/**
@@ -263,7 +264,13 @@ public class ALU {
 	 * @return 长度为 5 的字符串表示的计算结果，其中第 1 位是最高位进位，后 4 位 是二进制表示的相加结果，其中进位不可以由循环获得
 	 */
 	public String claAdder(String operand1, String operand2, char c) {
-		return null;
+		String result = "";
+		for (int i = 3; i >= 0; i--) {
+			String add = this.fullAdder(operand1.charAt(i), operand2.charAt(i), c);
+			c = add.charAt(0);
+			result = add.charAt(1) + result;
+		}
+		return c + result;
 	}
 
 	/**
@@ -467,7 +474,7 @@ public class ALU {
 	 *            All inputs.
 	 * @return "0" or "1".
 	 */
-	public String Not(String... input) {
+	public String not(String... input) {
 		for (String s : input)
 			if (s.equals("1"))
 				return "0";
@@ -482,7 +489,7 @@ public class ALU {
 	 *            All inputs.
 	 * @return "0" or "1".
 	 */
-	public String Or(String... input) {
+	public String or(String... input) {
 		for (String s : input)
 			if (s.equals("1"))
 				return "1";
@@ -496,10 +503,23 @@ public class ALU {
 	 *            All inputs.
 	 * @return "0" or "1".
 	 */
-	public String And(String... input) {
+	public String and(String... input) {
 		for (String s : input)
 			if (s.equals("0"))
 				return "0";
 		return "1";
+	}
+
+	/**
+	 * 异或门。
+	 * 
+	 * @param a
+	 *            一个输入
+	 * @param b
+	 *            另一个输入
+	 * @return 相同为0，相异为1
+	 */
+	public String xor(String a, String b) {
+		return a.equals(b) ? "0" : "1";
 	}
 }
