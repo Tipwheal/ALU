@@ -313,18 +313,17 @@ public class ALU {
 		String add2 = operand2.substring(0, 1);
 		String result = "";
 		String over = "0";
-		for (int i = operand1.length(); i < length; i++) {
+		for (int i = operand1.length(); i < length; i++)
 			operand1 = add1 + operand1;
+		for (int i = operand2.length(); i < length; i++)
 			operand2 = add2 + operand2;
-		}
 		for (int i = length / 4 - 1; i >= 0; i++) {
 			String s = this.claAdder(operand1.substring(i * 4, (i + 1) * 4), operand2.substring(i * 4, (i + 1) * 4), c);
 			result = s.substring(1) + result;
 			c = s.charAt(0);
 		}
-		if (operand1.startsWith(operand2.substring(0, 1)) && !operand1.startsWith(result.substring(0, 1))) {
+		if (operand1.startsWith(operand2.substring(0, 1)) && !operand1.startsWith(result.substring(0, 1)))
 			over = "1";
-		}
 		return over + result;
 	}
 
