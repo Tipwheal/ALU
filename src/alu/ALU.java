@@ -283,7 +283,14 @@ public class ALU {
 	 *         0），其余位为相加结果
 	 */
 	public String oneAdder(String operand) {
-		return null;
+		String add = "1";
+		String result = "";
+		for (int i = operand.length() - 1; i >= 0; i--) {
+			result = this.xor(operand.substring(i, i + 1), add) + result;
+			add = this.and(operand.substring(i, i + 1), add);
+		}
+		result = add + result;
+		return result;
 	}
 
 	/**
@@ -302,7 +309,23 @@ public class ALU {
 	 *         位是相加结果
 	 */
 	public String adder(String operand1, String operand2, char c, int length) {
-		return null;
+		String add1 = operand1.substring(0, 1);
+		String add2 = operand2.substring(0, 1);
+		String result = "";
+		String over = "0";
+		for (int i = operand1.length(); i < length; i++) {
+			operand1 = add1 + operand1;
+			operand2 = add2 + operand2;
+		}
+		for (int i = length / 4 - 1; i >= 0; i++) {
+			String s = this.claAdder(operand1.substring(i * 4, (i + 1) * 4), operand2.substring(i * 4, (i + 1) * 4), c);
+			result = s.substring(1) + result;
+			c = s.charAt(0);
+		}
+		if (operand1.startsWith(operand2.substring(0, 1)) && !operand1.startsWith(result.substring(0, 1))) {
+			over = "1";
+		}
+		return over + result;
 	}
 
 	/**
@@ -319,7 +342,7 @@ public class ALU {
 	 *         位是相加结果
 	 */
 	public String integerAddition(String operand1, String operand2, int length) {
-		return null;
+		return this.adder(operand1, operand2, '0', length);
 	}
 
 	/**
@@ -336,7 +359,7 @@ public class ALU {
 	 *         位是相减结果
 	 */
 	public String integerSubtraction(String operand1, String operand2, int length) {
-		return null;
+		return this.adder(operand1, this.negation(operand2), '1', length);
 	}
 
 	/**
