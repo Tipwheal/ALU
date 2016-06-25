@@ -12,20 +12,13 @@ public class ALU {
 	 * @return number的二进制表示，长度为 length
 	 */
 	public String integerRepresentation(String number, int length) {
-		boolean negative = number.startsWith("-");
-		if (negative)
-			number = number.substring(1);
 		int num = Integer.parseInt(number);
-		int add = 1;
+		if (number.startsWith("-"))
+			return this.integerRepresentation(((long) (1 << length) + num) + "", length);
 		String result = "";
 		for (int i = 0; i < length; i++) {
 			int last = num % 2;
 			num /= 2;
-			if (negative) {
-				last = 1 - last + add;
-				add = last == 2 ? add : 0;
-				last %= 2;
-			}
 			result = last + result;
 		}
 		return result;
@@ -136,10 +129,9 @@ public class ALU {
 	public String integerTrueValue(String operand) {
 		int number = 0;
 		if (operand.startsWith("1"))
-			number -= Math.pow(2, operand.length() - 1);
-		for (int i = 1; i < operand.length(); i++) {
+			number -= 1 << operand.length() - 1;
+		for (int i = 1; i < operand.length(); i++)
 			number += Integer.parseInt(operand.substring(i, i + 1)) * (int) Math.pow(2, operand.length() - i - 1);
-		}
 		return number + "";
 	}
 
@@ -155,23 +147,17 @@ public class ALU {
 	 * @return
 	 */
 	public String floatTrueValue(String operand, int eLength, int sLength) {
-		// String e = operand.substring(1, 1 + eLength);
-		// int exp = Integer.parseInt(this.integerTrueValue(e)) - 127;
-		// int[] s = new int[sLength];
-		// int dvd = 1;
-		// if (operand.substring(1 + eLength, 2 + eLength).equals(1)) {
-		// dvd = 0;
-		// s[0] = 5;
-		// }
-		// for (int i = 1; i < sLength; i++) {
-		// if (operand.substring(1 + eLength + i, 2 + eLength + i).equals("1"))
-		// {
-		// for (int j = i - 1; j >= 0; j--) {
-		// // s[j] +=
-		// }
-		// }
-		// }
-		return null;
+		boolean sign = operand.charAt(0) == '0' ? true : false;
+		String exponent = operand.substring(1, 1 + eLength);
+		String significant = operand.substring(1 + eLength);
+		if (!exponent.contains("0"))
+			return exponent.contains("0") ? "NaN" : (sign ? "+" : "-") + "Inf";
+		int expDec = Integer.parseInt(this.integerTrueValue(exponent)) - (1 << eLength - 1) - 1;
+		significant = (exponent.contains("1") ? "1" : "0") + significant;
+		double sig = 0;
+		for (int i = 0; i <= sLength; i++)
+			sig += Math.pow(2, -i);
+		return Math.pow(sig, expDec) + "";
 	}
 
 	/**
@@ -217,23 +203,23 @@ public class ALU {
 	public String logRightShift(String operand, int n) {
 		for (int i = 0; i < n; i++)
 			operand = "0" + operand;
-		return operand.substring(operand.length() - n);
+		return operand.substring(0, operand.length() - n);
 	}
 
 	/**
-	 * 逻辑右移操作。
+	 * 算术右移操作。
 	 * 
 	 * @param operand
 	 *            二进制表示的操作数
 	 * @param n
 	 *            右移的位数
-	 * @return operand 逻辑右移 n 位的结果
+	 * @return operand 算术右移 n 位的结果
 	 */
 	public String ariRightShift(String operand, int n) {
 		String s = operand.substring(0, 1);
 		for (int i = 0; i < n; i++)
 			operand = s + operand;
-		return operand.substring(operand.length() - n);
+		return operand.substring(0, operand.length() - n);
 	}
 
 	/**
@@ -317,7 +303,7 @@ public class ALU {
 			operand1 = add1 + operand1;
 		for (int i = operand2.length(); i < length; i++)
 			operand2 = add2 + operand2;
-		for (int i = length / 4 - 1; i >= 0; i++) {
+		for (int i = length / 4 - 1; i >= 0; i--) {
 			String s = this.claAdder(operand1.substring(i * 4, (i + 1) * 4), operand2.substring(i * 4, (i + 1) * 4), c);
 			result = s.substring(1) + result;
 			c = s.charAt(0);
@@ -375,7 +361,41 @@ public class ALU {
 	 *         位是相乘结果
 	 */
 	public String integerMultiplication(String operand1, String operand2, int length) {
-		return null;
+		boolean zero = !(operand1.contains("1") && operand2.contains("1"));
+		char sign1 = operand1.charAt(0);
+		char sign2 = operand2.charAt(0);
+		while (operand1.length() < length)
+			operand1 = sign1 + operand1;
+		while (operand2.length() < length)
+			operand2 = sign2 + operand2;
+		String product = "";
+		while (product.length() < length)
+			product += '0';
+		char last = '0';
+		char first = '0';
+		for (int i = 1; i <= length; i++) {
+			int sub;
+			sub = last - operand2.charAt(length - 1);
+			last = operand2.charAt(length - 1);
+			String temp = "";
+			switch (sub) {
+			case 0:
+				break;
+			default:
+				product = adder(product, sub == 1 ? operand1 : negation(operand1), sub == 1 ? '0' : '1', length)
+						.substring(1);
+				break;
+			}
+			temp = this.ariRightShift(product + operand2, 1);
+			product = temp.substring(0, length);
+			operand2 = temp.substring(length);
+		}
+		String temp = sign1 == sign2 ? "1" : "0";
+		if ((product + operand2.charAt(0)).contains(temp))
+			first = '1';
+		if (zero)
+			first = '0';
+		return first + operand2;
 	}
 
 	/**
@@ -392,7 +412,48 @@ public class ALU {
 	 *         位为商，最后 length 位为余数
 	 */
 	public String integerDivision(String operand1, String operand2, int length) {
-		return null;
+		char sign1 = operand1.charAt(0);
+		char sign2 = operand2.charAt(0);
+		while (operand1.length() < length)
+			operand1 = sign1 + operand1;
+		while (operand2.length() < length)
+			operand2 = sign2 + operand2;
+		if (!operand1.contains("1"))
+			return "0";
+		if (!operand2.contains("1"))
+			return "NaN";
+		String remainder = "";
+		String quotient = operand1;
+		System.out.println(quotient);
+		while (remainder.length() < length) {
+			remainder = sign1 + remainder;
+		}
+		for (int i = 0; i < length; i++) {
+			if (remainder.charAt(0) == sign2) {
+				remainder = this.integerSubtraction(remainder, operand2, length).substring(1);
+			} else {
+				remainder = this.integerAddition(remainder, operand2, length).substring(1);
+			}
+			quotient += remainder.charAt(0) == sign2 ? '1' : '0';
+			String temp = this.leftShift(remainder + quotient, 1);
+			remainder = temp.substring(0, length);
+			quotient = temp.substring(length, length * 2);
+			System.out.println("remainder\t" + remainder);
+			System.out.println("quotient\t" + quotient);
+		}
+		if (remainder.charAt(0) == sign2) {
+			remainder = this.integerSubtraction(remainder, operand2, length).substring(1);
+		} else {
+			remainder = this.integerAddition(remainder, operand2, length).substring(1);
+		}
+		if (sign1 != sign2) {
+			quotient += remainder.charAt(0) == sign2 ? '1' : '0';
+			remainder = this.integerSubtraction(remainder, operand2, length).substring(1);
+			quotient = this.adder(this.leftShift(quotient, 1).substring(0, length), "0", '1', length).substring(1);
+		}
+		System.out.println("remainder\t" + remainder);
+		System.out.println("quotient\t" + quotient);
+		return "0" + remainder + quotient;
 	}
 
 	/**
@@ -410,7 +471,42 @@ public class ALU {
 	 *         length 位是相加结果
 	 */
 	public String signedAddition(String operand1, String operand2, int length) {
-		return null;
+		char sign1 = operand1.charAt(0);
+		char sign2 = operand2.charAt(0);
+		while (operand1.length() < length)
+			operand1 = sign1 + operand1;
+		while (operand2.length() < length)
+			operand2 = sign2 + operand2;
+		String sum = "";
+		String first = "0";
+		if (sign1 == sign2) {
+			sum = this.adder("0" + operand1.substring(1), "0" + operand2.substring(1), '0', length + 4);
+			first = sum.charAt(4) + "";
+			sum = sum.substring(5);
+			return first + sign1 + sum;
+		} else {
+			String larger = "0";
+			for (int i = 1; i < length; i++) {
+				if (operand1.charAt(i) != operand2.charAt(i)) {
+					larger = operand1.charAt(i) == '1' ? "1" : "-1";
+					break;
+				}
+			}
+			if (larger.equals("0")) {
+				sum = this.integerSubtraction("0" + operand1.substring(1), "0" + operand2.substring(1), 4 + length)
+						.substring(5);
+				return "00" + sum;
+			}
+			if (larger.equals("1")) {
+				sum = this.integerSubtraction("0" + operand1.substring(1), "0" + operand2.substring(1), 4 + length)
+						.substring(5);
+				return "0" + sign1 + sum;
+			} else {
+				sum = this.integerSubtraction("0" + operand2.substring(1), "0" + operand1.substring(1), 4 + length)
+						.substring(5);
+				return "1" + sign2 + sum;
+			}
+		}
 	}
 
 	/**
@@ -430,7 +526,15 @@ public class ALU {
 	 *         0），其余位从左到右依次为符号、指 数（移码表示）、尾数（首位隐藏）。舍入策略为向 0 舍入
 	 */
 	public String floatAddition(String operand1, String operand2, int eLength, int sLength, int gLength) {
-		return null;
+		if (operand1.substring(1).equals(operand2.substring(1)))
+			if (operand1.charAt(0) != operand2.charAt(0))
+				return "0"+this.floatRepresentation("0", eLength, sLength);
+			else
+				return "0"+operand1.charAt(0)
+						+ this.adder(operand1.substring(1, eLength + 1), "0", '1', eLength).substring(1)
+						+ operand1.substring(eLength + 1);
+		else
+			return null;
 	}
 
 	/**
@@ -450,6 +554,13 @@ public class ALU {
 	 *         0），其余位从左到右依次为符号、指 数（移码表示）、尾数（首位隐藏）。舍入策略为向 0 舍入
 	 */
 	public String floatSubtraction(String operand1, String operand2, int eLength, int sLength, int gLength) {
+		if (operand1.substring(1).equals(operand2.substring(1)))
+			if (operand1.charAt(0) == operand2.charAt(0))
+				return "0"+this.floatRepresentation("0", eLength, sLength);
+			else
+				return "0"+operand1.charAt(0)
+						+ this.adder(operand1.substring(1, eLength + 1), "0", '1', eLength).substring(1)
+						+ operand1.substring(eLength + 1);
 		return null;
 	}
 
@@ -468,7 +579,33 @@ public class ALU {
 	 *         0），其余位从左到右依次为符号、指 数（移码表示）、尾数（首位隐藏）。舍入策略为向 0 舍入
 	 */
 	public String floatMultiplication(String operand1, String operand2, int eLength, int sLength) {
-		return null;
+		if (this.floatTrueValue(operand1, eLength, sLength).equals("0"))
+			return this.floatRepresentation("0", eLength, sLength);
+		if (this.floatTrueValue(operand2, eLength, sLength).equals("0"))
+			return this.floatRepresentation("0", eLength, sLength);
+		int e1;
+		int e2;
+		if (this.integerTrueValue(operand1.substring(1, eLength + 1)).equals("0")) {
+			e1 = -((1 << eLength) / 2) - 2;
+		}
+		if (this.integerTrueValue(operand2.substring(1, eLength + 1)).equals("0")) {
+			e2 = -((1 << eLength) / 2) - 2;
+		}
+		char overFlow = '0';
+		e1 = Integer.parseInt("0" + integerTrueValue(operand1.substring(1, eLength + 1))) - (1 << (eLength - 1)) + 1;
+		e2 = Integer.parseInt("0" + integerTrueValue(operand2.substring(1, eLength + 1))) - (1 << (eLength - 1)) + 1;
+		int e = e1 + e2;
+		double s1 = Double.parseDouble(this.floatTrueValue("00011" + operand1.substring(eLength + 1), 4, sLength));
+		double s2 = Double.parseDouble(this.floatTrueValue("00011" + operand2.substring(eLength + 1), 4, sLength));
+		String s = this.floatRepresentation((float) s1 * s2 + "", 4, sLength);
+		e += Integer.parseInt("0" + s.substring(1, 5));
+		if (e > (1 << eLength) - 1)
+			overFlow = '1';
+		if (operand1.startsWith(operand2.charAt(0) + "")) {
+			return overFlow + "0" + this.integerRepresentation(e + "", eLength) + s.substring(5);
+		} else {
+			return overFlow + "1" + this.integerRepresentation(e + "", eLength) + s.substring(5);
+		}
 	}
 
 	/**
@@ -486,6 +623,10 @@ public class ALU {
 	 *         0），其余位从左到右依次为符号、指 数（移码表示）、尾数（首位隐藏）。舍入策略为向 0 舍入
 	 */
 	public String floatDivision(String operand1, String operand2, int eLength, int sLength) {
+		if (this.floatTrueValue(operand1, eLength, sLength).equals("0"))
+			return this.floatRepresentation("0", eLength, sLength);
+		if (this.floatTrueValue(operand2, eLength, sLength).equals("0"))
+			return "NaN";
 		return null;
 	}
 
